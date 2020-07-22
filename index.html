@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset='utf-8'>
-<title>libde265.js</title>
+<title>12bit HEVC</title>
 <style type="text/css">
 body, button {
     font: 13px Helvetica, arial, freesans, clean, sans-serif;
@@ -22,31 +22,211 @@ a:active {
 a {
     color: #00a;
 }
+
+[slider] {
+  position: relative;
+  height: 14px;
+  border-radius: 10px;
+  text-align: left;
+  margin: 45px 0 10px 0;
+}
+ 
+[slider] > div {
+  position: absolute;
+  left: 13px;
+  right: 15px;
+  height: 14px;
+}
+
+[slider] > div > [inverse-left] {
+  position: absolute;
+  left: 0;
+  height: 14px;
+  border-radius: 10px;
+  background-color: #CCC;
+  margin: 0 7px;
+}
+ 
+[slider] > div > [inverse-right] {
+  position: absolute;
+  right: 0;
+  height: 14px;
+  border-radius: 10px;
+  background-color: #CCC;
+  margin: 0 7px;
+}
+ 
+[slider] > div > [range] {
+  position: absolute;
+  left: 0;
+  height: 14px;
+  border-radius: 14px;
+  background-color: #1ABC9C;
+}
+ 
+[slider] > div > [thumb] {
+  position: absolute;
+  top: -7px;
+  z-index: 2;
+  height: 28px;
+  width: 28px;
+  text-align: left;
+  margin-left: -11px;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+  background-color: #FFF;
+  border-radius: 50%;
+  outline: none;
+}
+
+div[slider] > input[type=range]::-ms-thumb {
+  pointer-events: all;
+  width: 28px;
+  height: 28px;
+  border-radius: 0px;
+  border: 0 none;
+  background: red;
+}
+ 
+div[slider] > input[type=range]::-moz-range-thumb {
+  pointer-events: all;
+  width: 28px;
+  height: 28px;
+  border-radius: 0px;
+  border: 0 none;
+  background: red;
+}
+ 
+div[slider] > input[type=range]::-webkit-slider-thumb {
+  pointer-events: all;
+  width: 28px;
+  height: 28px;
+  border-radius: 0px;
+  border: 0 none;
+  background: red;
+  -webkit-appearance: none;
+}
+ 
+div[slider] > input[type=range]::-ms-fill-lower {
+  background: transparent;
+  border: 0 none;
+}
+ 
+div[slider] > input[type=range]::-ms-fill-upper {
+  background: transparent;
+  border: 0 none;
+}
+
+[slider] > input[type=range] {
+  position: absolute;
+  pointer-events: none;
+  -webkit-appearance: none;
+  z-index: 3;
+  height: 14px;
+  top: -2px;
+  width: 100%;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+  filter: alpha(opacity=0);
+  -moz-opacity: 0;
+  -khtml-opacity: 0;
+  opacity: 0;
+}
+ 
+div[slider] > input[type=range]::-ms-track {
+  -webkit-appearance: none;
+  background: transparent;
+  color: transparent;
+}
+ 
+div[slider] > input[type=range]::-moz-range-track {
+  -moz-appearance: none;
+  background: transparent;
+  color: transparent;
+}
+ 
+div[slider] > input[type=range]:focus::-webkit-slider-runnable-track {
+  background: transparent;
+  border: transparent;
+}
+ 
+div[slider] > input[type=range]:focus {
+  outline: none;
+}
+
+div[slider] > input[type=range]::-ms-tooltip {
+  display: none;
+}
+ 
+[slider] > div > [sign] {
+  opacity: 0;
+  position: absolute;
+  margin-left: -11px;
+  top: -39px;
+  z-index:3;
+  background-color: #1ABC9C;
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 28px;
+  -webkit-border-radius: 28px;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  text-align: center;
+}
+ 
+[slider] > div > [sign]:after {
+  position: absolute;
+  content: '';
+  left: 0;
+  border-radius: 16px;
+  top: 19px;
+  border-left: 14px solid transparent;
+  border-right: 14px solid transparent;
+  border-top-width: 16px;
+  border-top-style: solid;
+  border-top-color: #1ABC9C;
+}
+ 
+[slider] > div > [sign] > span {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 28px;
+}
+ 
+[slider]:hover > div > [sign] {
+  opacity: 1;
+}
+
 </style>
-<script type="text/javascript" src="lib/libde265.min.js"></script>
+<script type="text/javascript" src="libde265.js"></script>
 <script>
 <!--
-var VIDEO_URL = "spreedmovie.hevc";
+var VIDEO_URL = "out.hevc";
 
 var player = null;
+var gvminfrom = 224;
+var gvmaxfrom = 2674;
+var gvminto = 0;
+var gvmaxto = 255;
 
 window.onload = function() {
     var video = document.getElementById("video");
     var status = document.getElementById("status");
 
     var playback = function(event) {
-        event.preventDefault();
-        if (player) {
-            player.stop();
-        }
-
         console.log("Playing with libde265", libde265.de265_get_version());
         player = new libde265.RawPlayer(video);
+        player.set_gvminfrom(gvminfrom);
+        player.set_gvmaxfrom(gvmaxfrom);
+        player.set_gvminto(gvminto);
+        player.set_gvmaxto(gvmaxto);
+        player.set_framerate_ratio(10);
         player.set_status_callback(function(msg, fps) {
             player.disable_filters(true);
             switch (msg) {
             case "loading":
-                status.innerHTML = "Loading movie...";
+                status.innerHTML = "Loading images data...";
                 break;
             case "initializing":
                 status.innerHTML = "Initializing...";
@@ -55,7 +235,7 @@ window.onload = function() {
                 status.innerHTML = "Playing...";
                 break;
             case "stopped":
-                status.innerHTML = "";
+                playback();
                 break;
             case "fps":
                 status.innerHTML = Number(fps).toFixed(2) + " fps";
@@ -66,25 +246,96 @@ window.onload = function() {
         });
         player.playback(VIDEO_URL);
     };
-
-    var button = document.getElementById("play");
-    if (button.addEventListener) {
-        button.addEventListener("click", playback, false);
-    } else if (button.attachEvent){
-        button.attachEvent('onclick', playback);
-    }
+    
+    playback();
 };
 -->
 </script>
 <body>
-    <h1>libde265.js</h1>
-    <a href="https://github.com/strukturag/libde265.js"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
     <div>
-        <div>Simple HEVC/H.265 bitstream player in pure JavaScript.</div>
-        <div><small>Copyright &copy; 2014 by <a href="http://www.struktur.de">struktur AG</a></small></div>
         <canvas id="video" width="0" height="0"></canvas>
     </div>
-    <button id="play">Play</button>
-    <span id="status"></span>
+    <div>
+        <span id="status"></span>
+    </div>
+    
+    <div slider id="slider-distance" style="width:512px;">
+      <div>
+        <div inverse-left style="width:5%;"></div>
+        <div inverse-right style="width:35%;"></div>
+        <div range style="left:5%;right:35%;"></div>
+        <span thumb style="left:5%;"></span>
+        <span thumb style="left:65%;"></span>
+        <div sign style="left:5%;">
+          <span id="value">224</span>
+        </div>
+        <div sign style="left:65%;">
+          <span id="value">2674</span>
+        </div>
+      </div>
+      <input type="range" tabindex="0" value="224" max="4096" min="0" step="1" oninput="
+          this.value=Math.min(this.value,this.parentNode.childNodes[5].value-1);
+          var value=(100/(parseInt(this.max)-parseInt(this.min)))*parseInt(this.value)-(100/(parseInt(this.max)-parseInt(this.min)))*parseInt(this.min);
+          var children = this.parentNode.childNodes[1].childNodes;
+          children[1].style.width=value+'%';
+          children[5].style.left=value+'%';
+          children[7].style.left=value+'%';children[11].style.left=value+'%';
+          children[11].childNodes[1].innerHTML=this.value;
+          gvminfrom = parseInt(this.value,10);
+          player.set_gvminfrom(gvminfrom);
+          " />
+ 
+      <input type="range" tabindex="0" value="2674" max="4096" min="0" step="1" oninput="
+          this.value=Math.max(this.value,this.parentNode.childNodes[3].value-(-1));
+          var value=(100/(parseInt(this.max)-parseInt(this.min)))*parseInt(this.value)-(100/(parseInt(this.max)-parseInt(this.min)))*parseInt(this.min);
+          var children = this.parentNode.childNodes[1].childNodes;
+          children[3].style.width=(100-value)+'%';
+          children[5].style.right=(100-value)+'%';
+          children[9].style.left=value+'%';children[13].style.left=value+'%';
+          children[13].childNodes[1].innerHTML=this.value;
+          gvmaxfrom = parseInt(this.value,10);
+          player.set_gvmaxfrom(gvmaxfrom);
+          " />
+    </div>
+    
+    <div slider id="slider-distance" style="width:512px;">
+      <div>
+        <div inverse-left style="width:0%;"></div>
+        <div inverse-right style="width:0%;"></div>
+        <div range style="left:0%;right:0%;"></div>
+        <span thumb style="left:0%;"></span>
+        <span thumb style="left:100%;"></span>
+        <div sign style="left:0%;">
+          <span id="value">0</span>
+        </div>
+        <div sign style="left:100%;">
+          <span id="value">255</span>
+        </div>
+      </div>
+      <input type="range" tabindex="0" value="0" max="255" min="0" step="1" oninput="
+          this.value=Math.min(this.value,this.parentNode.childNodes[5].value-1);
+          var value=(100/(parseInt(this.max)-parseInt(this.min)))*parseInt(this.value)-(100/(parseInt(this.max)-parseInt(this.min)))*parseInt(this.min);
+          var children = this.parentNode.childNodes[1].childNodes;
+          children[1].style.width=value+'%';
+          children[5].style.left=value+'%';
+          children[7].style.left=value+'%';children[11].style.left=value+'%';
+          children[11].childNodes[1].innerHTML=this.value;
+          gvminto = parseInt(this.value,10);
+          player.set_gvminto(gvminto);
+          " />
+ 
+      <input type="range" tabindex="0" value="255" max="255" min="0" step="1" oninput="
+          this.value=Math.max(this.value,this.parentNode.childNodes[3].value-(-1));
+          var value=(100/(parseInt(this.max)-parseInt(this.min)))*parseInt(this.value)-(100/(parseInt(this.max)-parseInt(this.min)))*parseInt(this.min);
+          var children = this.parentNode.childNodes[1].childNodes;
+          children[3].style.width=(100-value)+'%';
+          children[5].style.right=(100-value)+'%';
+          children[9].style.left=value+'%';children[13].style.left=value+'%';
+          children[13].childNodes[1].innerHTML=this.value;
+          gvmaxto = parseInt(this.value,10);
+          player.set_gvmaxto(gvmaxto);
+          " />
+    </div>
+    
 </body>
 </html>
