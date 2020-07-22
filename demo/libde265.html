@@ -199,10 +199,10 @@ div[slider] > input[type=range]::-ms-tooltip {
 }
 
 </style>
-<script type="text/javascript" src="../lib/libde265.min.js"></script>
+<script type="text/javascript" src="./lib/libde265.min.js"></script>
 <script>
 <!--
-var VIDEO_URL = "12bit_images.hevc";
+var VIDEO_URLS = ["./demo/12bit_images.hevc", "./demo/12bit_images_lossless.hevc"];
 
 var player = null;
 var gvminfrom = 224;
@@ -213,8 +213,9 @@ var gvmaxto = 255;
 window.onload = function() {
     var video = document.getElementById("video");
     var status = document.getElementById("status");
+    var source_index = document.getElementById("source0");
 
-    var playback = function(event) {
+    var playback = function() {
         console.log("Playing with libde265", libde265.de265_get_version());
         player = new libde265.RawPlayer(video);
         player.set_gvminfrom(gvminfrom);
@@ -226,16 +227,16 @@ window.onload = function() {
             player.disable_filters(true);
             switch (msg) {
             case "loading":
-                status.innerHTML = "Loading images data...";
+                status.innerHTML = "Loading...";
                 break;
             case "initializing":
                 status.innerHTML = "Initializing...";
                 break;
             case "playing":
-                status.innerHTML = "Playing...";
+                status.innerHTML = "Rendering...";
                 break;
             case "stopped":
-                playback();
+                status.innerHTML = "End.";
                 break;
             case "fps":
                 status.innerHTML = Number(fps).toFixed(2) + " fps";
@@ -244,10 +245,29 @@ window.onload = function() {
                 status.innerHTML = msg;
             }
         });
-        player.playback(VIDEO_URL);
+        player.playback(VIDEO_URLS[source_index.checked ? 0 : 1]);
     };
     
     playback();
+    
+    var button = document.getElementById("update");
+    if (button.addEventListener) {
+        button.addEventListener("click", function(event) {
+            event.preventDefault();
+            if (player) {
+                player.stop();
+            }
+            playback();
+        }, false);
+    } else if (button.attachEvent){
+        button.attachEvent('onclick', function(event) {
+            event.preventDefault();
+            if (player) {
+                player.stop();
+            }
+            playback();
+        });
+    }
 };
 -->
 </script>
@@ -259,6 +279,9 @@ window.onload = function() {
         <span id="status"></span>
     </div>
     
+    <br/>
+    <br/>
+    <p><b>Input contrast range:</b></p>
     <div slider id="slider-distance" style="width:512px;">
       <div>
         <div inverse-left style="width:5%;"></div>
@@ -298,6 +321,9 @@ window.onload = function() {
           " />
     </div>
     
+    <br/>
+    <br/>
+    <p><b>Output contrast range:</b></p>
     <div slider id="slider-distance" style="width:512px;">
       <div>
         <div inverse-left style="width:0%;"></div>
@@ -336,6 +362,13 @@ window.onload = function() {
           player.set_gvmaxto(gvmaxto);
           " />
     </div>
+    <br/>
+    <br/>
+    <br/>
+    <p><b>Images source:</b></p>
+    <p><input id="source0" name="source" type="radio" value=0 checked> Lossy</p>
+    <p><input id="source1" name="source" type="radio" value=1> Lossless</p>
+    <p><input id="update" type="button" value="Update"></p>
     
 </body>
 </html>
