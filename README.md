@@ -26,6 +26,9 @@ optimizations!
 A small example can be found in the `demo` folder and on
 https://strukturag.github.io/libde265.js/.
 
+12bit HEVC with contrast function on
+https://anton-chebotarev.github.io/libde265.js/.
+
 ## Known issues
 
 - More code from libde265 should be made asm.js aware
